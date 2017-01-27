@@ -1,0 +1,54 @@
+#app {
+	display: flex;
+	align-content: middle;
+}
+
+.cat-show {
+	display: flex;
+	justify-content: center;
+	width: 75%;
+}
+
+.cat-wrapper {
+	display: table;
+	margin: 0 20px;
+	text-align: center;
+}
+
+.cat-title,
+.cat-image {
+	display: table-row;
+}
+
+.cat-title {
+	text-transform: capitalize;
+}
+
+.cat-image {
+	height: auto;
+	max-width: 100%;
+	max-height: 75vh;
+}
+
+.click-count {
+	font-size: 18px;
+	padding-top: 20px;
+}
+
+.cat-list {
+	flex: 1 1;
+	list-style: none;
+	margin: 20px;
+	padding-left: 0;
+	text-transform: capitalize;
+	width: 75%;
+}
+
+.cat-list > li:not(.cat-list-title) {
+	cursor: pointer;
+}
+
+.cat-list-title {
+	font-weight: bold;
+}
+
