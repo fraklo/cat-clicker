@@ -5,7 +5,13 @@
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
+    "test": "mocha",
+    "test:watch": "mocha -w test/*.js"
   },
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0"
+  }
 }
