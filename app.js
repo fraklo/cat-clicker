@@ -8,6 +8,17 @@ const utils = {
 			}
 			return data;
 		}, {});
+	},
+
+	// Given data, updates form
+	setFormData: (form, data) => {
+		const els = form.children;
+		for(let i = 0, el; i < els.length; i++) {
+			el = els[i];
+			if(el.name) {
+				el.value = data[el.name];
+			}
+		}
 	}
 }
 
@@ -46,15 +57,8 @@ const adminView = {
 
 	// Syncs form with cat object data
 	updateFormData: () => {
-		const els = this.form.children;
-		let el;
 		const cat = model.getCurrentCat();
-		for(let i = 0; i < els.length; i++) {
-			el = els[i];
-			if(el.name) {
-				el.value = cat[el.name];
-			}
-		}
+		utils.setFormData(this.form, cat);
 	}
 }
 
@@ -75,7 +79,7 @@ const listView = {
 				controller.loadCat(i);
 			})
 			fragment.appendChild(li);
-		})
+		});
 		this.catList.appendChild(fragment);
 		this.catList.children = this.catList.children[0];
 	}
