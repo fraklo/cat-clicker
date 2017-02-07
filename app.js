@@ -1,4 +1,5 @@
 const utils = {
+	// Returns form data object
 	getFormData: form => {
 		const els = this.form.children;
 		return Array.from(els).reduce( (data, el) => {
@@ -10,6 +11,7 @@ const utils = {
 	}
 }
 
+// Admin to edit current cat info
 const adminView = {
 	init: () => {
 		this.adminSection = document.getElementById('admin-section');
@@ -17,7 +19,7 @@ const adminView = {
 			if(event.target.classList.contains('admin-toggle')) {
 				adminView.toggle();
 			}
-		})
+		});
 		this.form = document.forms.namedItem('admin-form');
 		this.form.addEventListener('submit', adminView.handleSubmit);
 		document.addEventListener('loadCat', adminView.updateFormData);
@@ -34,12 +36,15 @@ const adminView = {
 		this.adminSection.classList.toggle('active');
 	},
 
+	// Syncs clickCount input with current cat clickCount
 	updateCounter: () => {
-		const counter = Array.from(this.form.children).filter( input => input.name == 'clickCount' )[0];
+		const counter = Array.from(this.form.children)
+			.filter( input => input.name == 'clickCount' )[0];
 		const cat = model.getCurrentCat();
 		counter.value = cat.clickCount;
 	},
 
+	// Syncs form with cat object data
 	updateFormData: () => {
 		const els = this.form.children;
 		let el;
@@ -53,6 +58,7 @@ const adminView = {
 	}
 }
 
+// Cat listing (ul) View
 const listView = {
 	init: () => {
 		this.catList = document.getElementById('cat-list');
@@ -75,6 +81,7 @@ const listView = {
 	}
 }
 
+// Main Cat view
 const catView = {
 	init: () => {
 		this.catSection = document.getElementById('cat-section');
@@ -95,6 +102,7 @@ const catView = {
 		catView.updateCounter();
 	},
 
+	// Syncs current cat clickCount display with cat clickCount
 	updateCounter: () => {
 		const cat = model.getCurrentCat();
 		this.counter.textContent = cat.clickCount;
@@ -108,6 +116,7 @@ const model = {
 		this.data = data;
 	},
 
+	// Given catId, checks for existing cat
 	catExists: catId =>
 		this.data.cats[catId] ? true : false,
 
@@ -149,6 +158,7 @@ const model = {
 		}
 	},
 
+	// Given cat data, syncs cat data object with new data
 	updateCat: (catId, newCatData) => {
 		if(model.catExists(catId)) {
 			const cat = this.data.cats[catId];
@@ -166,33 +176,38 @@ const controller = {
 		adminView.init();
 		listView.init();
 		catView.init();
-		controller.triggerData('loadCat');
+		controller.triggerEvent('loadCat');
 	},
 
 	handleClickCount: () => {
 		const cat = model.getCurrentCat();
 		const clickCount = cat.clickCount > 0 ? cat.clickCount + 1 : 1;
 		model.setCatClickCount(cat, clickCount);
-		controller.triggerData('counterIncremented');
+		controller.triggerEvent('counterIncremented');
 	},
 
-	loadCat: cat => {
-		model.setCurrentCatId(cat);
-		controller.triggerData('loadCat');
+	// Given cat id, loads cat into cat view
+	loadCat: catId => {
+		model.setCurrentCatId(catId);
+		controller.triggerEvent('loadCat');
 	},
 
-	triggerData: event => {
+	triggerEvent: event => {
 		document.dispatchEvent(new Event(event));
 	},
 
+	// Syncs current cat with cat data
+	// triggers views to re-render with new data
 	updateCurrentCat: newCat => {
 		const currentCatId = model.getCurrentCatId();
 		model.updateCat(currentCatId, newCat);
+		// list view only updates when cat changed
 		listView.render();
-		controller.triggerData('loadCat');
+		controller.triggerEvent('loadCat');
 	}
 }
 
+// Environment check for node
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports.model = model;
 }
