@@ -1,7 +1,9 @@
 const utils = {
 	// Returns form data object
 	getFormData: form => {
-		const els = this.form.children;
+		if(typeof form != 'object' || !form.children) 
+			throw new Error('Requires valid form object');
+		const els = form.children;
 		return Array.from(els).reduce( (data, el) => {
 			if(el.name) {
 				data[el.name] = el.value;
@@ -15,7 +17,7 @@ const utils = {
 		const els = form.children;
 		for(let i = 0, el; i < els.length; i++) {
 			el = els[i];
-			if(el.name) {
+			if(el.name && data[el.name]) {
 				el.value = data[el.name];
 			}
 		}
@@ -214,4 +216,5 @@ const controller = {
 // Environment check for node
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports.model = model;
+	module.exports.utils = utils;
 }
