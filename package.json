@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node server.js",
     "test": "mocha",
-    "test:watch": "mocha -w test/*.js"
+    "test:watch": "mocha -w"
   },
   "author": "",
   "license": "ISC",
