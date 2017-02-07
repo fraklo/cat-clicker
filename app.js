@@ -40,7 +40,7 @@
 	const adminView = {
 		init: () => {
 			this.adminSection = document.getElementById('admin-section');
-			this.adminSection.addEventListener('click', () => {
+			this.adminSection.addEventListener('click', event => {
 				if(event.target.classList.contains('admin-toggle')) {
 					adminView.toggle();
 				}
