@@ -27,18 +27,16 @@ const utils = {
 // Admin to edit current cat info
 const adminView = {
 	init: app => {
-		const adminSection = adminView.createAdminSection(app);
+		const adminSection = adminView.createAdminSection();
 		app.appendChild(adminSection);
 		adminSection.addEventListener('click', event => {
 			if(event.target.classList.contains('admin-toggle')) {
-				adminView.toggle();
+				adminView.toggle(adminSection);
 			}
 		});
 
 		this.form = adminSection.getElementsByTagName('form')[0]; 
 		this.form.addEventListener('submit', adminView.handleSubmit);
-		document.addEventListener('loadCat', adminView.updateFormData);
-		document.addEventListener('counterIncremented', adminView.updateCounter);
 	},
 
 	createAdminSection: () => {
@@ -237,6 +235,18 @@ const controller = {
 		const clickCount = cat.clickCount > 0 ? cat.clickCount + 1 : 1;
 		model.setCatClickCount(cat, clickCount);
 		controller.triggerEvent('counterIncremented');
+	},
+
+	initEventListeners: () => {
+		const adminForm = adminView.getForm();
+		document.addEventListener('loadCat', () => {
+			const cat = model.getCurrentCat();
+			adminView.updateFormData(adminForm, cat);
+		});
+		document.addEventListener('counterIncremented', () => {
+			const cat = model.getCurrentCat();
+			adminView.updateCounter(adminForm, cat);
+		});
 	},
 
 	// Given cat id, loads cat into cat view
