@@ -117,8 +117,10 @@ const listView = {
 
 // Main Cat view
 const catView = {
-	init: () => {
-		this.catSection = document.getElementById('cat-section');
+	init: app => {
+		this.catSection = catView.createCatView();
+		app.appendChild(catSection);
+
 		this.img = this.catSection.getElementsByClassName('cat-image')[0];
 		this.img.addEventListener('click', event => {
 			controller.handleClickCount();
@@ -127,6 +129,21 @@ const catView = {
 		this.counter = this.catSection.getElementsByClassName('click-count')[0];
 		document.addEventListener('loadCat', catView.render);
 		document.addEventListener('counterIncremented', catView.updateCounter);
+	},
+
+	createCatView: () => {
+		const html = `
+			<div class="cat-wrapper">
+				<h3 class="cat-title"></h3>
+				<img class="cat-image" />
+				<span class="click-count"></span>
+			</div>
+		`;
+		const catView = document.createElement('div');
+		catView.id = 'cat-section';
+		catView.className = 'section';
+		catView.innerHTML = html;
+		return catView;
 	},
 
 	render: () => {
@@ -209,7 +226,7 @@ const controller = {
 		model.setCurrentCatId(0);
 		const app = document.getElementById('app');
 		listView.init(app);
-		catView.init();
+		catView.init(app);
 		adminView.init(app);
 		controller.initEventListeners();
 		controller.triggerEvent('loadCat');
