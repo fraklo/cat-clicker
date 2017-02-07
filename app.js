@@ -26,18 +26,42 @@ const utils = {
 
 // Admin to edit current cat info
 const adminView = {
-	init: () => {
-		this.adminSection = document.getElementById('admin-section');
-		this.adminSection.addEventListener('click', event => {
+	init: app => {
+		const adminSection = adminView.createAdminSection(app);
+		app.appendChild(adminSection);
+		adminSection.addEventListener('click', event => {
 			if(event.target.classList.contains('admin-toggle')) {
 				adminView.toggle();
 			}
 		});
-		this.form = document.forms.namedItem('admin-form');
+
+		this.form = adminSection.getElementsByTagName('form')[0]; 
 		this.form.addEventListener('submit', adminView.handleSubmit);
 		document.addEventListener('loadCat', adminView.updateFormData);
 		document.addEventListener('counterIncremented', adminView.updateCounter);
 	},
+
+	createAdminSection: () => {
+		const html = `
+			<button class="admin-toggle">Admin</button>
+			<div class="admin-wrapper">
+				<form name="admin-form">
+					<input type="text" name="name" class="admin-input" />
+					<input type="text" name="image" class="admin-input" />
+					<input type="number" name="clickCount" class="admin-input" />
+					<button type="button" class="admin-toggle">Cancel</button>
+					<button type="Submit">Submit</button>
+				</form>
+			</div>`;
+		const adminSection = document.createElement('div');
+		adminSection.id = 'admin-section';
+		adminSection.className = 'section';
+		adminSection.innerHTML = html;
+		return adminSection;
+	},
+
+	getForm: () => 
+		this.form,
 
 	handleSubmit: event => {
 		event.preventDefault();
@@ -179,7 +203,8 @@ const controller = {
 	init: data => {
 		model.init(data);
 		model.setCurrentCatId(0);
-		adminView.init();
+		const app = document.getElementById('app');
+		adminView.init(app);
 		listView.init();
 		catView.init();
 		controller.triggerEvent('loadCat');
