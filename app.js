@@ -66,33 +66,37 @@ const adminView = {
 	handleSubmit: event => {
 		event.preventDefault();
 		controller.updateCurrentCat(utils.getFormData(this.form));
-		adminView.toggle();
+		adminView.toggle(this.form);
 	},
 
-	toggle: () => {
-		this.adminSection.classList.toggle('active');
-	},
+	toggle: el =>
+		el.classList.toggle('active'),
 
 	// Syncs clickCount input with current cat clickCount
-	updateCounter: () => {
-		const counter = Array.from(this.form.children)
-			.filter( input => input.name == 'clickCount' )[0];
-		const cat = model.getCurrentCat();
+	updateCounter: (form, cat) => {
+		const inputsArr = Array.from(form.children);
+		const counter = inputsArr.filter( input => input.name == 'clickCount' )[0];
 		counter.value = cat.clickCount;
 	},
 
 	// Syncs form with cat object data
-	updateFormData: () => {
-		const cat = model.getCurrentCat();
-		utils.setFormData(this.form, cat);
-	}
+	updateFormData: (form, data) =>
+		utils.setFormData(form, data)
 }
 
 // Cat listing (ul) View
 const listView = {
-	init: () => {
-		this.catList = document.getElementById('cat-list');
+	init: app => {
+		this.catList = listView.createCatList();
+		app.appendChild(catList);
 		listView.render();
+	},
+
+	createCatList: () => {
+		const catList = document.createElement('ul');
+		catList.id = 'cat-list';
+		catList.className = 'section';
+		return catList;
 	},
 
 	render: () => {
@@ -204,9 +208,10 @@ const controller = {
 		model.init(data);
 		model.setCurrentCatId(0);
 		const app = document.getElementById('app');
-		adminView.init(app);
-		listView.init();
+		listView.init(app);
 		catView.init();
+		adminView.init(app);
+		controller.initEventListeners();
 		controller.triggerEvent('loadCat');
 	},
 
