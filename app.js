@@ -81,10 +81,10 @@ const adminView = {
 
 // Cat listing (ul) View
 const listView = {
-	init: app => {
+	init: (app, cats) => {
 		this.catList = listView.createCatList();
-		app.appendChild(catList);
-		listView.render();
+		app.appendChild(this.catList);
+		listView.render(cats);
 	},
 
 	createCatList: () => {
@@ -94,19 +94,19 @@ const listView = {
 		return catList;
 	},
 
-	render: () => {
+	getList: () =>
+		this.catList,
+
+	render: cats => {
 		this.catList.innerHTML = "";
 		const fragment = document.createDocumentFragment();
-		model.getAllCats().forEach((cat, i) => {
+		cats.forEach((cat, i) => {
 			const li = document.createElement('li');
 			li.textContent = cat.name;
-			li.addEventListener('click', () => {
-				controller.loadCat(i);
-			})
+			li.setAttribute('data-catid', i);
 			fragment.appendChild(li);
 		});
 		this.catList.appendChild(fragment);
-		this.catList.children = this.catList.children[0];
 	}
 }
 
@@ -181,7 +181,7 @@ const model = {
 		model.getCatById(this.data.currentCatId),
 
 	getCurrentCatId: () => {
-		if(Number.isInteger(this.data.currentCatId)) {
+		if(this.data.currentCatId >= 0) {
 			return this.data.currentCatId;
 		} else {
 			throw new Error('No current cat id set');
@@ -217,12 +217,18 @@ const model = {
 
 const controller = {
 	init: data => {
+		const app = document.getElementById('app');
+
 		model.init(data);
 		model.setCurrentCatId(0);
-		const app = document.getElementById('app');
-		listView.init(app);
+
+		const cats = model.getAllCats();
+		listView.init(app, cats);
+
 		catView.init(app);
+
 		adminView.init(app);
+
 		controller.initEventListeners();
 		controller.triggerEvent('loadCat');
 	},
@@ -249,6 +255,14 @@ const controller = {
 			event.preventDefault();
 			adminView.handleSubmit(adminForm, controller.updateCurrentCat);
 		});
+
+		const catList = listView.getList();
+		catList.addEventListener('click', event => {
+			const el = event.target;
+			if(el.tagName.toUpperCase() == 'LI') {
+				controller.loadCat(el.dataset.catid);
+			}
+		});
 	},
 
 	// Given cat id, loads cat into cat view
@@ -267,7 +281,8 @@ const controller = {
 		const currentCatId = model.getCurrentCatId();
 		model.updateCat(currentCatId, newCat);
 		// list view only updates when cat changed
-		listView.render();
+		const cats = model.getAllCats();
+		listView.render(cats);
 		controller.triggerEvent('loadCat');
 	}
 }
@@ -275,6 +290,7 @@ const controller = {
 // Environment check for node
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports.adminView = adminView;
+	module.exports.listView = listView;
 	module.exports.model = model;
 	module.exports.utils = utils;
 }
