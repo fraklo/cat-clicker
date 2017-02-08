@@ -15,9 +15,10 @@ const utils = {
 	// Given data, updates form
 	setFormData: (form, data) => {
 		const els = form.children;
-		for(let i = 0, el; i < els.length; i++) {
+		for(let i = 0, el, val; i < els.length; i++) {
 			el = els[i];
-			if(el.name && data[el.name]) {
+			val = data[el.name] != undefined ? `${data[el.name]}` : '';
+			if(el.name && val) {
 				el.value = data[el.name];
 			}
 		}
@@ -31,12 +32,10 @@ const adminView = {
 		app.appendChild(adminSection);
 		adminSection.addEventListener('click', event => {
 			if(event.target.classList.contains('admin-toggle')) {
-				adminView.toggle(adminSection);
+				adminView.toggleView(adminSection);
 			}
 		});
-
-		this.form = adminSection.getElementsByTagName('form')[0]; 
-		this.form.addEventListener('submit', adminView.handleSubmit);
+		this.form = adminSection.getElementsByTagName('form')[0];
 	},
 
 	createAdminSection: () => {
@@ -61,23 +60,21 @@ const adminView = {
 	getForm: () => 
 		this.form,
 
-	handleSubmit: event => {
-		event.preventDefault();
-		controller.updateCurrentCat(utils.getFormData(this.form));
-		adminView.toggle(this.form);
+	handleSubmit: (form, update) => {
+		update(utils.getFormData(form));
+		form.classList.remove('active');
 	},
 
-	toggle: el =>
+	toggleView: el =>
 		el.classList.toggle('active'),
 
 	// Syncs clickCount input with current cat clickCount
 	updateCounter: (form, cat) => {
-		const inputsArr = Array.from(form.children);
-		const counter = inputsArr.filter( input => input.name == 'clickCount' )[0];
+		const counter = form.querySelector('[name=clickCount]');
 		counter.value = cat.clickCount;
 	},
 
-	// Syncs form with cat object data
+	// Syncs form inputs with cat data
 	updateFormData: (form, data) =>
 		utils.setFormData(form, data)
 }
@@ -247,6 +244,11 @@ const controller = {
 			const cat = model.getCurrentCat();
 			adminView.updateCounter(adminForm, cat);
 		});
+
+		adminForm.addEventListener('submit', event => {
+			event.preventDefault();
+			adminView.handleSubmit(adminForm, controller.updateCurrentCat);
+		});
 	},
 
 	// Given cat id, loads cat into cat view
@@ -272,6 +274,7 @@ const controller = {
 
 // Environment check for node
 if (typeof module !== 'undefined' && module.exports) {
+	module.exports.adminView = adminView;
 	module.exports.model = model;
 	module.exports.utils = utils;
 }
