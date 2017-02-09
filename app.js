@@ -113,27 +113,21 @@ const listView = {
 // Main Cat view
 const catView = {
 	init: app => {
-		this.catSection = catView.createCatView();
-		app.appendChild(catSection);
+		this.catSection = catView.createCatSection();
+		app.appendChild(this.catSection);
 
 		this.img = this.catSection.getElementsByClassName('cat-image')[0];
-		this.img.addEventListener('click', event => {
-			controller.handleClickCount();
-		})
 		this.title = this.catSection.getElementsByClassName('cat-title')[0];
 		this.counter = this.catSection.getElementsByClassName('click-count')[0];
-		document.addEventListener('loadCat', catView.render);
-		document.addEventListener('counterIncremented', catView.updateCounter);
 	},
 
-	createCatView: () => {
+	createCatSection: () => {
 		const html = `
 			<div class="cat-wrapper">
 				<h3 class="cat-title"></h3>
 				<img class="cat-image" />
 				<span class="click-count"></span>
-			</div>
-		`;
+			</div>`;
 		const catView = document.createElement('div');
 		catView.id = 'cat-section';
 		catView.className = 'section';
@@ -141,18 +135,19 @@ const catView = {
 		return catView;
 	},
 
-	render: () => {
-		const cat = model.getCurrentCat();
+	getCatSection: () =>
+		this.catSection,
+
+	render: cat => {
+		if(typeof cat !== 'object') throw new Error('Requires valid cat object');
 		this.img.src = cat.image;
 		this.title.textContent = cat.name;
-		catView.updateCounter();
+		catView.updateCounter(cat.clickCount);
 	},
 
-	// Syncs current cat clickCount display with cat clickCount
-	updateCounter: () => {
-		const cat = model.getCurrentCat();
-		this.counter.textContent = cat.clickCount;
-	},
+	// Syncs current cat click-count display with cat clickCount
+	updateCounter: count =>
+		this.counter.textContent = count
 }
 
 const model = {
@@ -241,27 +236,49 @@ const controller = {
 	},
 
 	initEventListeners: () => {
+		// Admin form event listeners
 		const adminForm = adminView.getForm();
-		document.addEventListener('loadCat', () => {
-			const cat = model.getCurrentCat();
-			adminView.updateFormData(adminForm, cat);
-		});
-		document.addEventListener('counterIncremented', () => {
-			const cat = model.getCurrentCat();
-			adminView.updateCounter(adminForm, cat);
-		});
-
+		// form submitted, update cat data with form data
 		adminForm.addEventListener('submit', event => {
 			event.preventDefault();
 			adminView.handleSubmit(adminForm, controller.updateCurrentCat);
 		});
 
+		// Cat list event listeners
 		const catList = listView.getList();
+		// cat clicked, load corresponding cat
 		catList.addEventListener('click', event => {
 			const el = event.target;
 			if(el.tagName.toUpperCase() == 'LI') {
 				controller.loadCat(el.dataset.catid);
 			}
+		});
+
+		// Cat Section event listeners
+		const catSection = catView.getCatSection();
+		// image is clicked, update clickCount
+		catSection.addEventListener('click', event => {
+			if(event.target.tagName.toUpperCase() == 'IMG') {
+				controller.handleClickCount();
+			}
+		});
+
+		// General event listners
+		// new cat loaded
+		document.addEventListener('loadCat', () => {
+			const cat = model.getCurrentCat();
+			// re-render cat view
+			catView.render(cat);
+			// update admin form data with new cat
+			adminView.updateFormData(adminForm, cat);
+		});
+		// counter incremented
+		document.addEventListener('counterIncremented', () => {
+			const cat = model.getCurrentCat();
+			// update cat view counter
+			catView.updateCounter(cat.clickCount);
+			// update admin view with new cat data
+			adminView.updateCounter(adminForm, cat);
 		});
 	},
 
@@ -290,6 +307,7 @@ const controller = {
 // Environment check for node
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports.adminView = adminView;
+	module.exports.catView = catView;
 	module.exports.listView = listView;
 	module.exports.model = model;
 	module.exports.utils = utils;
