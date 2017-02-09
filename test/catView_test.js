@@ -5,10 +5,9 @@ require('jsdom-global')();
 
 describe('catView', () => {
 	const catView = app.catView;
-	let document;
 	let mainApp;
 	beforeEach(() => {
-		document = jsdom("<div id='app'></div>").defaultView.document
+		const document = jsdom("<div id='app'></div>").defaultView.document
 		mainApp = document.getElementById('app');
 		catView.init(mainApp);
 	});
@@ -94,5 +93,5 @@ describe('catView', () => {
 			expect(clickCount.textContent).to.be.equal('2');
 		});
 	});
-	
+
 });
