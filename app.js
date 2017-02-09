@@ -3,6 +3,7 @@ const utils = {
 	getFormData: form => {
 		if(typeof form != 'object' || !form.children) 
 			throw new Error('Requires valid form object');
+		
 		const els = form.children;
 		return Array.from(els).reduce( (data, el) => {
 			if(el.name) {
@@ -14,6 +15,10 @@ const utils = {
 
 	// Given data, updates form
 	setFormData: (form, data) => {
+		if(typeof form != 'object' || !form.children) 
+			throw new Error('Requires valid form object');
+		if(typeof data != 'object') throw new Error('Requires valid data object');
+
 		const els = form.children;
 		for(let i = 0, el, val; i < els.length; i++) {
 			el = els[i];

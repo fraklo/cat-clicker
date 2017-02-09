@@ -78,6 +78,22 @@ describe('utils', () => {
 				count: "3"
 			});
 		});
+
+		it('should throw error "Requires valid form object" if no form object', () => {
+			const error = () => utils.setFormData("", {});
+			expect(error).to.throw('Requires valid form object');
+		});
+
+		it('should throw error "Requires valid form object" if form has no children', () => {
+			const error = () => utils.setFormData({}, {});
+			expect(error).to.throw('Requires valid form object');
+		});
+
+		it('should throw error "Requires valid data object" if no data object', () => {
+			const form = { children: [] };
+			const error = () => utils.setFormData(form, '');
+			expect(error).to.throw("Requires valid data object");
+		});
 	});
-	
+
 });
