@@ -4,30 +4,36 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<div id='app'>
-			<ul id="cat-list" class="section"></ul>
+		<div id='app'></div>
 
-			<div id="cat-section" class="section">
-				<div class="cat-wrapper">
-					<h3 class="cat-title"></h3>
-					<img class="cat-image" />
-					<span class="click-count"></span>
-				</div>
-			</div>
-
-			<div id="admin-section" class="section">
-				<button class="admin-toggle">Admin</button>
-				<div class="admin-wrapper">
-					<form name="admin-form">
-						<input type="text" name="name" class="admin-input" />
-						<input type="text" name="image" class="admin-input" />
-						<input type="number" name="clickCount" class="admin-input" />
-						<button type="button" class="admin-toggle">Cancel</button>
-						<button type="Submit">Submit</button>
-					</form>
-				</div>
-			</div>
-		</div>
 		<script src='app.js'></script>
+		<script type="text/javascript">
+			const catData = {
+				cats: [
+					{
+						name: 'Spencer',
+						image: 'http://thecatapi.com/api/images/get.php?id=4e2',
+						clickCount: 0
+					},
+					{
+						name: 'Fluffykins',
+						image: 'http://thecatapi.com/api/images/get.php?id=7me',
+						clickCount: 0
+					},
+					{
+						name: 'Buttons',
+						image: 'http://thecatapi.com/api/images/get.php?id=ec4',
+						clickCount: 0
+					},
+					{
+						name: 'George',
+						image: 'http://thecatapi.com/api/images/get.php?id=cmk',
+						clickCount: 0
+					}
+				]
+			};
+			controller.init(catData);
+
+		</script>
 	</body>	
 </html>

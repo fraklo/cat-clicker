@@ -5,7 +5,15 @@
   "main": "server.js",
   "scripts": {
     "dev": "node server.js",
+    "test": "mocha",
+    "test:watch": "mocha -w"
   },
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jsdom": "^9.10.0",
+    "jsdom-global": "^2.1.1",
+    "mocha": "^3.2.0"
+  }
 }
