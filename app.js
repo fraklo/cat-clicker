@@ -86,24 +86,15 @@ const adminView = {
 
 // Cat listing (ul) View
 const listView = {
-	init: (app, cats) => {
-		this.catList = listView.createCatList();
-		app.appendChild(this.catList);
-		listView.render(cats);
-	},
-
-	createCatList: () => {
+	createCatList: app => {
 		const catList = document.createElement('ul');
 		catList.id = 'cat-list';
 		catList.className = 'section';
 		return catList;
 	},
 
-	getList: () =>
-		this.catList,
-
-	render: cats => {
-		this.catList.innerHTML = "";
+	render: (cats, catList) => {
+		catList.innerHTML = "";
 		const fragment = document.createDocumentFragment();
 		cats.forEach((cat, i) => {
 			const li = document.createElement('li');
@@ -204,6 +195,7 @@ const model = {
 
 const controller = function() {
 	let data;
+	let catList;
 	let catSection;
 	return {
 		init: modelData => {
@@ -212,7 +204,10 @@ const controller = function() {
 
 			const app = document.getElementById('app');
 			const cats = model.getAllCats(data);
-			listView.init(app, cats);
+
+			catList = listView.createCatList(cats);
+			app.appendChild(catList);
+			listView.render(cats, catList);
 
 			catSection = catView.createCatSection();
 			app.appendChild(catSection);
@@ -240,7 +235,6 @@ const controller = function() {
 			});
 
 			// Cat list event listeners
-			const catList = listView.getList();
 			// cat clicked, load corresponding cat
 			catList.addEventListener('click', event => {
 				const el = event.target;
