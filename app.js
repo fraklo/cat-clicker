@@ -32,17 +32,6 @@ const utils = {
 
 // Admin to edit current cat info
 const adminView = {
-	init: app => {
-		const adminSection = adminView.createAdminSection();
-		app.appendChild(adminSection);
-		adminSection.addEventListener('click', event => {
-			if(event.target.classList.contains('admin-toggle')) {
-				adminView.toggleView(adminSection);
-			}
-		});
-		this.form = adminSection.getElementsByTagName('form')[0];
-	},
-
 	createAdminSection: () => {
 		const html = `
 			<button class="admin-toggle">Admin</button>
@@ -59,29 +48,21 @@ const adminView = {
 		adminSection.id = 'admin-section';
 		adminSection.className = 'section';
 		adminSection.innerHTML = html;
+		adminSection.form = adminSection.getElementsByTagName('form')[0];
 		return adminSection;
 	},
 
-	getForm: () => 
-		this.form,
-
-	handleSubmit: (form, update) => {
-		update(utils.getFormData(form));
-		form.classList.remove('active');
-	},
+	handleSubmit: adminSection =>
+		adminSection.classList.remove('active'),
 
 	toggleView: el =>
 		el.classList.toggle('active'),
 
 	// Syncs clickCount input with current cat clickCount
-	updateCounter: (form, cat) => {
+	updateCounter: (count, form) => {
 		const counter = form.querySelector('[name=clickCount]');
-		counter.value = cat.clickCount;
-	},
-
-	// Syncs form inputs with cat data
-	updateFormData: (form, data) =>
-		utils.setFormData(form, data)
+		counter.value = count;
+	}
 }
 
 // Cat listing (ul) View
@@ -195,6 +176,7 @@ const model = {
 
 const controller = function() {
 	let data;
+	let adminSection;
 	let catList;
 	let catSection;
 	return {
@@ -211,7 +193,8 @@ const controller = function() {
 			catSection = catView.createCatSection();
 			app.appendChild(catSection);
 
-			adminView.init(app);
+			adminSection = adminView.createAdminSection();
+			app.appendChild(adminSection);
 
 			controller.initEventListeners();
 			controller.triggerEvent('catUpdated');
@@ -226,11 +209,18 @@ const controller = function() {
 
 		initEventListeners: () => {
 			// Admin form event listeners
-			const adminForm = adminView.getForm();
+			adminSection.addEventListener('click', event => {
+				if(event.target.classList.contains('admin-toggle')) {
+					adminView.toggleView(adminSection);
+				}
+			});
 			// form submitted, update cat data with form data
-			adminForm.addEventListener('submit', event => {
+			const adminForm = adminSection.form;
+			adminSection.addEventListener('submit', event => {
 				event.preventDefault();
-				adminView.handleSubmit(adminForm, controller.updateCurrentCat);
+				const formData = utils.getFormData(adminForm);
+				controller.updateCurrentCat(formData);
+				adminView.handleSubmit(adminSection);
 			});
 
 			// Cat list event listeners
@@ -257,7 +247,7 @@ const controller = function() {
 				// update cat view counter
 				catView.updateCounter(cat.clickCount, catSection);
 				// update admin view with new cat data
-				adminView.updateCounter(adminForm, cat);
+				adminView.updateCounter(cat.clickCount, adminForm);
 			});
 			// cat loaded
 			document.addEventListener('catLoaded', () => {
@@ -265,7 +255,7 @@ const controller = function() {
 				// re-render cat view
 				catView.render(cat, catSection);
 				// update admin form data with new cat
-				adminView.updateFormData(adminForm, cat);
+				utils.setFormData(adminForm, cat)
 			});
 			// cat updated 
 			document.addEventListener('catUpdated', () => {
