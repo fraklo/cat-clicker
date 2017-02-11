@@ -117,42 +117,37 @@ const listView = {
 
 // Main Cat view
 const catView = {
-	init: app => {
-		this.catSection = catView.createCatSection();
-		app.appendChild(this.catSection);
-
-		this.img = this.catSection.getElementsByClassName('cat-image')[0];
-		this.title = this.catSection.getElementsByClassName('cat-title')[0];
-		this.counter = this.catSection.getElementsByClassName('click-count')[0];
-	},
-
-	createCatSection: () => {
+	createCatSection: app => {
 		const html = `
 			<div class="cat-wrapper">
 				<h3 class="cat-title"></h3>
 				<img class="cat-image" />
 				<span class="click-count"></span>
 			</div>`;
-		const catView = document.createElement('div');
-		catView.id = 'cat-section';
-		catView.className = 'section';
-		catView.innerHTML = html;
-		return catView;
+		const catSection = document.createElement('div');
+		catSection.id = 'cat-section';
+		catSection.className = 'section';
+		catSection.innerHTML = html;
+
+		app.appendChild(catSection);
+
+		catSection.img = catSection.getElementsByClassName('cat-image')[0];
+		catSection.title = catSection.getElementsByClassName('cat-title')[0];
+		catSection.counter = catSection.getElementsByClassName('click-count')[0];
+
+		return catSection;
 	},
 
-	getCatSection: () =>
-		this.catSection,
-
-	render: cat => {
+	render: (cat, catSection) => {
 		if(typeof cat !== 'object') throw new Error('Requires valid cat object');
-		this.img.src = cat.image;
-		this.title.textContent = cat.name;
-		catView.updateCounter(cat.clickCount);
+		catSection.img.src = cat.image;
+		catSection.title.textContent = cat.name;
+		catView.updateCounter(cat.clickCount, catSection);
 	},
 
 	// Syncs current cat click-count display with cat clickCount
-	updateCounter: count =>
-		this.counter.textContent = count
+	updateCounter: (count, catSection) =>
+		catSection.counter.textContent = count
 }
 
 const model = {
@@ -213,16 +208,17 @@ const model = {
 
 const controller = function() {
 	let data;
+	let catSection;
 	return {
 		init: modelData => {
 			data = model.validateData(modelData);
 			model.setCurrentCatId(0, data);
-			const cats = model.getAllCats(data);
 
 			const app = document.getElementById('app');
+			const cats = model.getAllCats(data);
 			listView.init(app, cats);
 
-			catView.init(app);
+			catSection = catView.createCatSection(app);
 
 			adminView.init(app);
 
@@ -257,7 +253,6 @@ const controller = function() {
 			});
 
 			// Cat Section event listeners
-			const catSection = catView.getCatSection();
 			// image is clicked, update clickCount
 			catSection.addEventListener('click', event => {
 				if(event.target.tagName.toUpperCase() == 'IMG') {
@@ -270,7 +265,7 @@ const controller = function() {
 			document.addEventListener('loadCat', () => {
 				const cat = model.getCurrentCat(data);
 				// re-render cat view
-				catView.render(cat);
+				catView.render(cat, catSection);
 				// update admin form data with new cat
 				adminView.updateFormData(adminForm, cat);
 			});
@@ -278,7 +273,7 @@ const controller = function() {
 			document.addEventListener('counterIncremented', () => {
 				const cat = model.getCurrentCat(data);
 				// update cat view counter
-				catView.updateCounter(cat.clickCount);
+				catView.updateCounter(cat.clickCount, catSection);
 				// update admin view with new cat data
 				adminView.updateCounter(adminForm, cat);
 			});
