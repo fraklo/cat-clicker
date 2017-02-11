@@ -207,7 +207,6 @@ const controller = function() {
 
 			catList = listView.createCatList(cats);
 			app.appendChild(catList);
-			listView.render(cats, catList);
 
 			catSection = catView.createCatSection();
 			app.appendChild(catSection);
@@ -215,7 +214,7 @@ const controller = function() {
 			adminView.init(app);
 
 			controller.initEventListeners();
-			controller.triggerEvent('catLoaded');
+			controller.triggerEvent('catUpdated');
 		},
 
 		handleClickCount: () => {
@@ -268,6 +267,14 @@ const controller = function() {
 				// update admin form data with new cat
 				adminView.updateFormData(adminForm, cat);
 			});
+			// cat updated 
+			document.addEventListener('catUpdated', () => {
+				const cats = model.getAllCats(data);
+				// full app re-render
+				listView.render(cats, catList);
+				// re-use render calls from catLoaded
+				controller.triggerEvent('catLoaded');
+			});
 		},
 
 		// Given cat id, loads cat into cat view
@@ -286,7 +293,7 @@ const controller = function() {
 			model.syncCatData(data, newCatdata);
 			// list view only updates when cat changed
 			const cats = model.getAllCats(data);
-			listView.render(cats);
+			listView.render(cats, catList);
 			controller.triggerEvent('catLoaded');
 		}
 	};
