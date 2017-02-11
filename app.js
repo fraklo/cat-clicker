@@ -215,7 +215,7 @@ const controller = function() {
 			adminView.init(app);
 
 			controller.initEventListeners();
-			controller.triggerEvent('loadCat');
+			controller.triggerEvent('catLoaded');
 		},
 
 		handleClickCount: () => {
@@ -252,14 +252,6 @@ const controller = function() {
 			});
 
 			// General event listners
-			// new cat loaded
-			document.addEventListener('loadCat', () => {
-				const cat = model.getCurrentCat(data);
-				// re-render cat view
-				catView.render(cat, catSection);
-				// update admin form data with new cat
-				adminView.updateFormData(adminForm, cat);
-			});
 			// counter incremented
 			document.addEventListener('counterIncremented', () => {
 				const cat = model.getCurrentCat(data);
@@ -268,12 +260,20 @@ const controller = function() {
 				// update admin view with new cat data
 				adminView.updateCounter(adminForm, cat);
 			});
+			// cat loaded
+			document.addEventListener('catLoaded', () => {
+				const cat = model.getCurrentCat(data);
+				// re-render cat view
+				catView.render(cat, catSection);
+				// update admin form data with new cat
+				adminView.updateFormData(adminForm, cat);
+			});
 		},
 
 		// Given cat id, loads cat into cat view
 		loadCat: catId => {
 			model.setCurrentCatId(catId, data);
-			controller.triggerEvent('loadCat');
+			controller.triggerEvent('catLoaded');
 		},
 
 		triggerEvent: event => {
@@ -287,7 +287,7 @@ const controller = function() {
 			// list view only updates when cat changed
 			const cats = model.getAllCats(data);
 			listView.render(cats);
-			controller.triggerEvent('loadCat');
+			controller.triggerEvent('catLoaded');
 		}
 	};
 }();
