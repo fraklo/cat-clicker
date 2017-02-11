@@ -156,33 +156,27 @@ const catView = {
 }
 
 const model = {
-	init: data => {
-		if(!data) throw new Error('Data is empty');
-		if(!data.cats) throw new Error('Data missing cats 🐱');
-		this.data = data;
-	},
-
 	// Given catId, checks for existing cat
-	catExists: catId =>
-		this.data.cats[catId] ? true : false,
+	catExists: (catId, data) =>
+		data.cats[catId] ? true : false,
 
-	getAllCats: () => {
-		if(this.data.cats) {
-			return this.data.cats
+	getAllCats: (data) => {
+		if(data.cats) {
+			return data.cats
 		} else {
 			return [];
 		}
 	},
 
-	getCatById: catId =>
-		model.catExists(catId) ? this.data.cats[catId] : null,
+	getCatById: (catId, data) =>
+		model.catExists(catId, data) ? data.cats[catId] : null,
 
-	getCurrentCat: () => 
-		model.getCatById(this.data.currentCatId),
+	getCurrentCat: data => 
+		model.getCatById(data.currentCatId, data),
 
-	getCurrentCatId: () => {
-		if(this.data.currentCatId >= 0) {
-			return this.data.currentCatId;
+	getCurrentCatId: data => {
+		if(data.currentCatId >= 0) {
+			return data.currentCatId;
 		} else {
 			throw new Error('No current cat id set');
 		}
@@ -196,118 +190,121 @@ const model = {
 		}
 	},
 
-	setCurrentCatId: catId => {
-		if(model.catExists(catId)) {
-			this.data.currentCatId = catId;
+	setCurrentCatId: (catId, data) => {
+		if(model.catExists(catId, data)) {
+			data.currentCatId = catId;
 		} else {
 			throw new Error('Cat Id must be a valid Id');
 		}
 	},
 
 	// Given cat data, syncs cat data object with new data
-	updateCat: (catId, newCatData) => {
-		if(model.catExists(catId)) {
-			const cat = this.data.cats[catId];
-			this.data.cats[catId] = Object.assign({}, cat, newCatData);
-		} else {
-			throw new Error('Cat Id must be a valid Id');	
+	syncCatData: (data, newCatData) => {
+		const catId = model.getCurrentCatId(data);
+		data.cats[catId] = Object.assign({}, data.cats[catId], newCatData);
+	},
+
+	validateData: (data) => {
+		if(!data) throw new Error('Data is empty');
+		if(!data.cats) throw new Error('Data missing cats 🐱');
+		return data;
+	}
+}
+
+const controller = function() {
+	let data;
+	return {
+		init: modelData => {
+			data = model.validateData(modelData);
+			model.setCurrentCatId(0, data);
+			const cats = model.getAllCats(data);
+
+			const app = document.getElementById('app');
+			listView.init(app, cats);
+
+			catView.init(app);
+
+			adminView.init(app);
+
+			controller.initEventListeners();
+			controller.triggerEvent('loadCat');
+		},
+
+		handleClickCount: () => {
+			const cat = model.getCurrentCat(data);
+			const clickCount = cat.clickCount > 0 ? cat.clickCount + 1 : 1;
+			model.setCatClickCount(cat, clickCount);
+			controller.triggerEvent('counterIncremented');
+		},
+
+		initEventListeners: () => {
+			// Admin form event listeners
+			const adminForm = adminView.getForm();
+			// form submitted, update cat data with form data
+			adminForm.addEventListener('submit', event => {
+				event.preventDefault();
+				adminView.handleSubmit(adminForm, controller.updateCurrentCat);
+			});
+
+			// Cat list event listeners
+			const catList = listView.getList();
+			// cat clicked, load corresponding cat
+			catList.addEventListener('click', event => {
+				const el = event.target;
+				if(el.tagName.toUpperCase() == 'LI') {
+					controller.loadCat(el.dataset.catid);
+				}
+			});
+
+			// Cat Section event listeners
+			const catSection = catView.getCatSection();
+			// image is clicked, update clickCount
+			catSection.addEventListener('click', event => {
+				if(event.target.tagName.toUpperCase() == 'IMG') {
+					controller.handleClickCount();
+				}
+			});
+
+			// General event listners
+			// new cat loaded
+			document.addEventListener('loadCat', () => {
+				const cat = model.getCurrentCat(data);
+				// re-render cat view
+				catView.render(cat);
+				// update admin form data with new cat
+				adminView.updateFormData(adminForm, cat);
+			});
+			// counter incremented
+			document.addEventListener('counterIncremented', () => {
+				const cat = model.getCurrentCat(data);
+				// update cat view counter
+				catView.updateCounter(cat.clickCount);
+				// update admin view with new cat data
+				adminView.updateCounter(adminForm, cat);
+			});
+		},
+
+		// Given cat id, loads cat into cat view
+		loadCat: catId => {
+			model.setCurrentCatId(catId, data);
+			controller.triggerEvent('loadCat');
+		},
+
+		triggerEvent: event => {
+			document.dispatchEvent(new Event(event));
+		},
+
+		// Syncs current cat with cat data
+		// triggers views to re-render with new data
+		updateCurrentCat: newCatdata => {
+			model.syncCatData(data, newCatdata);
+			// list view only updates when cat changed
+			const cats = model.getAllCats(data);
+			listView.render(cats);
+			controller.triggerEvent('loadCat');
 		}
-	}
-}
-
-const controller = {
-	init: data => {
-		const app = document.getElementById('app');
-
-		model.init(data);
-		model.setCurrentCatId(0);
-
-		const cats = model.getAllCats();
-		listView.init(app, cats);
-
-		catView.init(app);
-
-		adminView.init(app);
-
-		controller.initEventListeners();
-		controller.triggerEvent('loadCat');
-	},
-
-	handleClickCount: () => {
-		const cat = model.getCurrentCat();
-		const clickCount = cat.clickCount > 0 ? cat.clickCount + 1 : 1;
-		model.setCatClickCount(cat, clickCount);
-		controller.triggerEvent('counterIncremented');
-	},
-
-	initEventListeners: () => {
-		// Admin form event listeners
-		const adminForm = adminView.getForm();
-		// form submitted, update cat data with form data
-		adminForm.addEventListener('submit', event => {
-			event.preventDefault();
-			adminView.handleSubmit(adminForm, controller.updateCurrentCat);
-		});
-
-		// Cat list event listeners
-		const catList = listView.getList();
-		// cat clicked, load corresponding cat
-		catList.addEventListener('click', event => {
-			const el = event.target;
-			if(el.tagName.toUpperCase() == 'LI') {
-				controller.loadCat(el.dataset.catid);
-			}
-		});
-
-		// Cat Section event listeners
-		const catSection = catView.getCatSection();
-		// image is clicked, update clickCount
-		catSection.addEventListener('click', event => {
-			if(event.target.tagName.toUpperCase() == 'IMG') {
-				controller.handleClickCount();
-			}
-		});
-
-		// General event listners
-		// new cat loaded
-		document.addEventListener('loadCat', () => {
-			const cat = model.getCurrentCat();
-			// re-render cat view
-			catView.render(cat);
-			// update admin form data with new cat
-			adminView.updateFormData(adminForm, cat);
-		});
-		// counter incremented
-		document.addEventListener('counterIncremented', () => {
-			const cat = model.getCurrentCat();
-			// update cat view counter
-			catView.updateCounter(cat.clickCount);
-			// update admin view with new cat data
-			adminView.updateCounter(adminForm, cat);
-		});
-	},
-
-	// Given cat id, loads cat into cat view
-	loadCat: catId => {
-		model.setCurrentCatId(catId);
-		controller.triggerEvent('loadCat');
-	},
-
-	triggerEvent: event => {
-		document.dispatchEvent(new Event(event));
-	},
-
-	// Syncs current cat with cat data
-	// triggers views to re-render with new data
-	updateCurrentCat: newCat => {
-		const currentCatId = model.getCurrentCatId();
-		model.updateCat(currentCatId, newCat);
-		// list view only updates when cat changed
-		const cats = model.getAllCats();
-		listView.render(cats);
-		controller.triggerEvent('loadCat');
-	}
-}
+	};
+}();
 
 // Environment check for node
 if (typeof module !== 'undefined' && module.exports) {
