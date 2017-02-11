@@ -111,13 +111,13 @@ const listView = {
 			li.setAttribute('data-catid', i);
 			fragment.appendChild(li);
 		});
-		this.catList.appendChild(fragment);
+		catList.appendChild(fragment);
 	}
 }
 
 // Main Cat view
 const catView = {
-	createCatSection: app => {
+	createCatSection: () => {
 		const html = `
 			<div class="cat-wrapper">
 				<h3 class="cat-title"></h3>
@@ -128,13 +128,9 @@ const catView = {
 		catSection.id = 'cat-section';
 		catSection.className = 'section';
 		catSection.innerHTML = html;
-
-		app.appendChild(catSection);
-
 		catSection.img = catSection.getElementsByClassName('cat-image')[0];
 		catSection.title = catSection.getElementsByClassName('cat-title')[0];
 		catSection.counter = catSection.getElementsByClassName('click-count')[0];
-
 		return catSection;
 	},
 
@@ -218,7 +214,8 @@ const controller = function() {
 			const cats = model.getAllCats(data);
 			listView.init(app, cats);
 
-			catSection = catView.createCatSection(app);
+			catSection = catView.createCatSection();
+			app.appendChild(catSection);
 
 			adminView.init(app);
 
