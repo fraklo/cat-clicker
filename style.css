@@ -18,12 +18,12 @@
 	text-align: center;
 }
 
-.cat-title,
+.cat-name,
 .cat-image {
 	display: table-row;
 }
 
-.cat-title {
+.cat-name {
 	text-transform: capitalize;
 }
 

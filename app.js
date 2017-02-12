@@ -95,7 +95,7 @@ const catView = {
 	createCatSection: () => {
 		const html = `
 			<div class="cat-wrapper">
-				<h3 class="cat-title"></h3>
+				<h3 class="cat-name"></h3>
 				<img class="cat-image" />
 				<span class="click-count"></span>
 			</div>`;
@@ -103,8 +103,9 @@ const catView = {
 		catSection.id = 'cat-section';
 		catSection.className = 'section';
 		catSection.innerHTML = html;
+		// innerchild accessors
 		catSection.img = catSection.getElementsByClassName('cat-image')[0];
-		catSection.title = catSection.getElementsByClassName('cat-title')[0];
+		catSection.catName = catSection.getElementsByClassName('cat-name')[0];
 		catSection.counter = catSection.getElementsByClassName('click-count')[0];
 		return catSection;
 	},
@@ -112,12 +113,12 @@ const catView = {
 	render: (cat, catSection) => {
 		if(typeof cat !== 'object') throw new Error('Requires valid cat object');
 		catSection.img.src = cat.image;
-		catSection.title.textContent = cat.name;
-		catView.updateCounter(cat.clickCount, catSection);
+		catSection.catName.textContent = cat.name;
+		catView.setCatSectionCount(catSection, cat.clickCount);
 	},
 
 	// Syncs current cat click-count display with cat clickCount
-	updateCounter: (count, catSection) =>
+	setCatSectionCount: (catSection, count) =>
 		catSection.counter.textContent = count
 }
 
@@ -248,7 +249,7 @@ const controller = function() {
 			document.addEventListener('counterIncremented', () => {
 				const cat = model.getCurrentCat(data);
 				// update cat view counter
-				catView.updateCounter(cat.clickCount, catSection);
+				catView.setCatSectionCount(catSection, cat.clickCount);
 				// update admin view with new cat data
 				adminView.setAdminFormCount(adminForm, cat.clickCount);
 			});
