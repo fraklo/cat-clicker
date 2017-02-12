@@ -127,13 +127,8 @@ const model = {
 	catExists: (catId, data) =>
 		data.cats[catId] ? true : false,
 
-	getAllCats: (data) => {
-		if(data.cats) {
-			return data.cats
-		} else {
-			return [];
-		}
-	},
+	getAllCats: data =>
+		data.cats || [],
 
 	getCatById: (catId, data) =>
 		model.catExists(catId, data) ? data.cats[catId] : null,
@@ -161,18 +156,19 @@ const model = {
 		if(model.catExists(catId, data)) {
 			data.currentCatId = catId;
 		} else {
-			throw new Error('Cat Id must be a valid Id');
+			throw new Error('Cat id must be a valid id');
 		}
 	},
 
 	// Given cat data, syncs cat data object with new data
-	syncCatData: (data, newCatData) => {
+	syncNewCatData: (newCatData, data) => {
 		const catId = model.getCurrentCatId(data);
+		// merge new cat data with old cat data
 		data.cats[catId] = Object.assign({}, data.cats[catId], newCatData);
 	},
 
 	validateData: (data) => {
-		if(!data) throw new Error('Data is empty');
+		if(typeof data !== 'object') throw new Error('Requires valid data object');
 		if(!data.cats) throw new Error('Data missing cats 🐱');
 		return data;
 	}
@@ -284,11 +280,11 @@ const controller = function() {
 		// Syncs current cat with cat data
 		// triggers views to re-render with new data
 		updateCurrentCat: newCatdata => {
-			model.syncCatData(data, newCatdata);
 			// list view only updates when cat changed
 			const cats = model.getAllCats(data);
 			listView.render(cats, catList);
 			controller.triggerEvent('catLoaded');
+			model.syncNewCatData(newCatdata, data);
 		}
 	};
 }();
