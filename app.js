@@ -52,7 +52,6 @@ const adminView = {
 		adminSection.id = 'admin-section';
 		adminSection.className = 'section';
 		adminSection.innerHTML = html;
-		adminSection.form = adminSection.getElementsByTagName('form')[0];
 		return adminSection;
 	},
 
@@ -63,7 +62,7 @@ const adminView = {
 		el.classList.toggle('active'),
 
 	// Syncs clickCount input with current cat clickCount
-	updateCounter: (count, form) => {
+	setAdminFormCount: (form, count) => {
 		const counter = form.querySelector('[name=clickCount]');
 		counter.value = count;
 	}
@@ -219,7 +218,7 @@ const controller = function() {
 				}
 			});
 			// form submitted, update cat data with form data
-			const adminForm = adminSection.form;
+			const adminForm = adminSection.getElementsByTagName('form')[0];
 			adminSection.addEventListener('submit', event => {
 				event.preventDefault();
 				const formData = utils.getFormData(adminForm);
@@ -251,7 +250,7 @@ const controller = function() {
 				// update cat view counter
 				catView.updateCounter(cat.clickCount, catSection);
 				// update admin view with new cat data
-				adminView.updateCounter(cat.clickCount, adminForm);
+				adminView.setAdminFormCount(adminForm, cat.clickCount);
 			});
 			// cat loaded
 			document.addEventListener('catLoaded', () => {
