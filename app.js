@@ -70,7 +70,7 @@ const adminView = {
 
 // Cat listing (ul) View
 const listView = {
-	createCatList: app => {
+	createCatList: () => {
 		const catList = document.createElement('ul');
 		catList.id = 'cat-list';
 		catList.className = 'section';
