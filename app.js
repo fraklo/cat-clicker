@@ -202,9 +202,8 @@ const controller = function() {
 
 		handleClickCount: () => {
 			const cat = model.getCurrentCat(data);
-			const clickCount = cat.clickCount > 0 ? cat.clickCount + 1 : 1;
+			const clickCount = Number.parseInt(cat.clickCount) + 1;
 			model.setCatClickCount(cat, clickCount);
-			controller.triggerEvent('counterIncremented');
 		},
 
 		initEventListeners: () => {
@@ -237,6 +236,7 @@ const controller = function() {
 			catSection.addEventListener('click', event => {
 				if(event.target.tagName.toUpperCase() == 'IMG') {
 					controller.handleClickCount();
+					controller.triggerEvent('counterIncremented');
 				}
 			});
 
@@ -278,13 +278,9 @@ const controller = function() {
 		},
 
 		// Syncs current cat with cat data
-		// triggers views to re-render with new data
 		updateCurrentCat: newCatdata => {
-			// list view only updates when cat changed
-			const cats = model.getAllCats(data);
-			listView.render(cats, catList);
-			controller.triggerEvent('catLoaded');
 			model.syncNewCatData(newCatdata, data);
+			controller.triggerEvent('catUpdated');
 		}
 	};
 }();
