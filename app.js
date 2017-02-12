@@ -1,12 +1,15 @@
+"use strict";
+
 const utils = {
 	// Returns form data object
 	getFormData: form => {
-		if(typeof form != 'object' || !form.children) 
+		if(typeof form !== 'object' || !form.children) 
 			throw new Error('Requires valid form object');
-		
-		const els = form.children;
-		return Array.from(els).reduce( (data, el) => {
+		// create array from form children
+		const elsArray = [...form.children];
+		return elsArray.reduce( (data, el) => {
 			if(el.name) {
+				// if element has name add property to object with element value
 				data[el.name] = el.value;
 			}
 			return data;
@@ -15,18 +18,19 @@ const utils = {
 
 	// Given data, updates form
 	setFormData: (form, data) => {
-		if(typeof form != 'object' || !form.children) 
+		if(typeof form !== 'object' || !form.children) 
 			throw new Error('Requires valid form object');
-		if(typeof data != 'object') throw new Error('Requires valid data object');
-
-		const els = form.children;
-		for(let i = 0, el, val; i < els.length; i++) {
-			el = els[i];
-			val = data[el.name] != undefined ? `${data[el.name]}` : '';
+		if(typeof data !== 'object') throw new Error('Requires valid data object');
+		// create array from form children
+		const elsArray = [...form.children];
+		elsArray.map( el => {
+			// if data property exists ensure string value for inputs
+			let val = data[el.name] === undefined ? '' : `${data[el.name]}`;
 			if(el.name && val) {
+				// data contains value for input
 				el.value = data[el.name];
 			}
-		}
+		});
 	}
 }
 
