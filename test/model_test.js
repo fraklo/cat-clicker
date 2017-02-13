@@ -3,7 +3,6 @@ const app = require('../app');
 
 describe('model', () => {
   const model = app.model;
-
   const catData = {
     currentCatId: 0,
     cats: [
@@ -20,145 +19,187 @@ describe('model', () => {
     ]
   };
 
-  describe('init', () => {
-    it('should throw "Data is empty"', () => {
-      const error = () => model.init();
-      expect(error).to.throw('Data is empty');
+  describe('catExists', () => {
+    it('should return true if cat exists', () =>  {
+      const catCheck = model.catExists(1, catData);
+      expect(catCheck).to.be.true;
     });
 
-    it('should throw error containing "missing cats"', () => {
-      const error = () => model.init({});
-      expect(error).to.throw(/missing cats/);
+    it('should return false if cat does not exist', () =>  {
+      const catCheck = model.catExists(4, catData);
+      expect(catCheck).to.be.false;
     });
   });
 
   describe('getAllCats', () => {
     it('should return empty array if no cats', () => {
-      model.init({cats: []});
-      const cats = model.getAllCats();
+      const cats = model.getAllCats({});
       expect(cats).to.be.deep.equal([]);
     });
 
     it('should get all cats', () => {
-      model.init(catData);
-      const cats = model.getAllCats();
-
+      const cats = model.getAllCats(catData);
       expect(cats).to.be.deep.equal(catData.cats);
       expect(cats.length).to.be.equal(2);
     });
   });
 
   describe('getCatById', () => {
-    model.init(catData);
-
     it('should get cat by passing catId', () => {
-      const cat = model.getCatById(1);
+      const cat = model.getCatById(1, catData);
       expect(cat).to.be.deep.equal(catData.cats[1]);
     });
 
     it('should return null if cat does not exist', () => {
-      let cat = model.getCatById();
-      expect(cat).to.be.null;
-
-      cat = model.getCatById(3);
+      cat = model.getCatById(3, catData);
       expect(cat).to.be.null;
       
-      cat = model.getCatById('kitty');
+      cat = model.getCatById('kitty', catData);
       expect(cat).to.be.null;
     });
   });
 
   describe('getCurrentCat', () => {
-    model.init(catData);
     it('should get currentCat', () => {
-      const cat = model.getCurrentCat();
-      expect(cat).to.be.deep.equal(catData.cats[0]);
-      expect(cat.name).to.be.equal('Spencer');
+      const cat = model.getCurrentCat(catData);
+      const currentCat = catData.cats[0];
+      expect(cat).to.be.deep.equal(currentCat);
+      expect(cat.name).to.be.equal(currentCat.name);
     });
   });
 
   describe('getCurrentCatId', () => {
     it('should get currentCat id', () => {
-      const catId = model.getCurrentCatId();
+      const catId = model.getCurrentCatId(catData);
       expect(catId).to.be.equal(0);
     });
 
     it('should throw exception if no currentCatId', () => {
-      model.init({cats: []});
-      const error = () => model.getCurrentCatId();
+      const error = () => model.getCurrentCatId({});
       expect(error).to.throw('No current cat id set');
     });
   });
   
   describe('setCatClickCount', () => {
-    const cat = model.getAllCats()[0];
+    const cat = catData.cats[0];
 
     it('should throw if NaN', () => {
-      const error = () => app.model.setCatClickCount(cat, 'zero');
-      expect(error).to.throw(Error);
+      const error = () => model.setCatClickCount(cat, 'zero');
+      expect(error).to.throw('Click Count must be an Integer of 0 or greater');
     });
 
     it('should allow 0', () => {
-      app.model.setCatClickCount(cat, 0);
+      model.setCatClickCount(cat, 0);
       expect(cat.clickCount).to.be.equal(0);
     });
     
     it('should set clickCount to amount passed', () => { 
-      app.model.setCatClickCount(cat, 1);
+      model.setCatClickCount(cat, 1);
       expect(cat.clickCount).to.be.equal(1);
 
-      app.model.setCatClickCount(cat, 2);
+      model.setCatClickCount(cat, 2);
       expect(cat.clickCount).to.be.equal(2);
 
-      app.model.setCatClickCount(cat, 3);
+      model.setCatClickCount(cat, 3);
       expect(cat.clickCount).to.be.equal(3);
     });
   });
 
   describe('setCurrentCatId', () => {
     it('should create currentCat key if does not exist', () => {
-      model.init({cats: [{}]});
-      app.model.setCurrentCatId(0);
+      model.setCurrentCatId(0, catData);
       expect(catData.currentCatId).to.be.equal(0);
     });
 
     it('should set currentCat', () => {
-      model.init(catData);
-      app.model.setCurrentCatId(1);
+      model.setCurrentCatId(1, catData);
       expect(catData.currentCatId).to.be.equal(1);
     });
 
     it('should throw if catId is NaN', () => {
-      const error = () => app.model.setCurrentCatId('two');
-      expect(error).to.throw(Error);
+      const error = () => model.setCurrentCatId('two', catData);
+      expect(error).to.throw('Cat id must be a valid id');
     });
 
     it('should throw if cat does not exist', () => {
-      const error = () => app.model.setCurrentCatId(3);
-      expect(error).to.throw(Error);
+      const error = () => model.setCurrentCatId(3, catData);
+      expect(error).to.throw('Cat id must be a valid id');
     });
   });
 
-  describe('updateCat', () => {
-    it('should updateCat', () => {
-      const catId = 0;
+  describe('syncNewCatData', () => {
+    let catData;
+    const catId = 0;
+    beforeEach(() => {
+      catData = {
+        currentCatId: 0,
+        cats: [
+          {
+            name: 'Spencer',
+            image: 'http://some-old-image.com',
+            clickCount: 1
+          },
+          {
+            name: 'Fluffykins',
+            image: 'http://super-old-image.com',
+            clickCount: 0
+          }
+        ]
+      };
+      model.setCurrentCatId(catId, catData);
+    });
+
+    it('should update cat data with new cat data', () => {
       let newCatData = {
-        name: 'Spencer',
-        clickCount: 2
+        name: 'Stevie',
+        image: 'http://neato-cat-images.com/',
+        clickCount: 4
       };
-      model.updateCat(catId, newCatData);
-      const update1 = model.getCatById(catId);
-      expect(update1.name).to.be.equal('Spencer');
-      expect(update1.clickCount).to.be.equal(2);
+      model.syncNewCatData(newCatData, catData);
+      const updatedCat = model.getCatById(catId, catData);
+      // name updated with new value
+      expect(updatedCat.name).to.be.equal(newCatData.name);
+      // image updated with new value
+      expect(updatedCat.image).to.be.equal(newCatData.image);
+      // clickCount updated with new value
+      expect(updatedCat.clickCount).to.be.equal(4);
+    });
 
-      newCatData = {
-        name: 'Mr. Kittington',
-        clickCount: 15
+    it('should only update cat data with matching data', () => {
+      const catId = 0;
+      model.setCurrentCatId(catId, catData);
+      let newCatData = {
+        name: 'Jones',
+        tester: 4
       };
-      model.updateCat(catId, newCatData);
-      const update2 = model.getCatById(catId);
-      expect(update2.name).to.be.equal('Mr. Kittington');
-      expect(update2.clickCount).to.be.equal(15);
+      model.syncNewCatData(newCatData, catData);
+      const updatedCat = model.getCatById(catId, catData);
+      // name updated with new value
+      expect(updatedCat.name).to.be.equal(newCatData.name);
+      // image left untouched
+      expect(updatedCat.image).to.be.equal('http://some-old-image.com');
+      // clickCount left untouched
+      expect(updatedCat.clickCount).to.be.equal(1);
+      // tester value ignored
+    });
+
+    describe('validateData', () => {
+      it('should return false if no data', () => {
+        const data = model.validateData();
+        expect(data).to.be.false;
+      });
+
+      it('should return false if data is missing cats property', () => {
+        const data = model.validateData({});
+        expect(data).to.be.false;
+      });
+
+      it('should return data if data is valid', () => {
+        const modelData = { cats: [] };
+        const data = model.validateData(modelData);
+        expect(data).to.be.deep.equal(modelData);
+      });
     });
   });
+  
 })
