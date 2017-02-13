@@ -201,71 +201,92 @@ const controller = function() {
 			controller.triggerEvent('catUpdated');
 		},
 
-		handleClickCount: () => {
+		// Handlers
+		// admin toggle button clicked, toggle admin view
+		handleAdminSectionClick: event => {
+			if(event.target.classList.contains('admin-toggle')) {
+				adminView.toggleView(adminSection);
+			}
+		},
+
+		// admin form submitted, update cat data with form data
+		handleAdminSectionSubmit: adminForm => {
+			const formData = utils.getFormData(adminForm);
+			controller.updateCurrentCat(formData);
+			adminView.handleSubmit(adminSection);
+		},
+
+		// cat list item clicked, load corresponding cat
+		handleCatListClicked: event => {
+			const el = event.target;
+			if(el.tagName.toUpperCase() == 'LI') {
+				controller.loadCat(el.dataset.catid);
+			}
+		},
+
+		// new cat loaded, update catView and admin form data
+		handleCatLoaded: adminForm => {
 			const cat = model.getCurrentCat(data);
-			const clickCount = Number.parseInt(cat.clickCount) + 1;
-			model.setCatClickCount(cat, clickCount);
+			// re-render cat view
+			catView.render(cat, catSection);
+			// update admin form data with new cat
+			utils.setFormData(adminForm, cat);
+		},
+
+		// cat image clicked, update clickCount
+		handleCatSectionClicked: event => {
+			if(event.target.tagName.toUpperCase() == 'IMG') {
+				const cat = model.getCurrentCat(data);
+				const clickCount = Number.parseInt(cat.clickCount) + 1;
+				model.setCatClickCount(cat, clickCount);
+				controller.triggerEvent('counterIncremented');
+			}
+		},
+
+		// cat data updated, re-render all the things
+		handleCatUpdated: () => {
+			const cats = model.getAllCats(data);
+			listView.render(cats, catList);
+			// re-use render calls from catLoaded
+			controller.triggerEvent('catLoaded');
+		},
+
+		// counter updated, update catview & admin counters
+		handleCounterIncremented: adminForm => {
+			const cat = model.getCurrentCat(data);
+			// update cat view counter
+			catView.setCatSectionCount(catSection, cat.clickCount);
+			// update admin view with new cat data
+			adminView.setAdminFormCount(adminForm, cat.clickCount);
 		},
 
 		initEventListeners: () => {
-			// Admin form event listeners
-			adminSection.addEventListener('click', event => {
-				if(event.target.classList.contains('admin-toggle')) {
-					adminView.toggleView(adminSection);
-				}
-			});
-			// form submitted, update cat data with form data
+			// grab admin form for quick reference to pass to some functions
 			const adminForm = adminSection.getElementsByTagName('form')[0];
+
+			// Admin section event listeners
+			adminSection.addEventListener('click',
+				controller.handleAdminSectionClick);
+
 			adminSection.addEventListener('submit', event => {
 				event.preventDefault();
-				const formData = utils.getFormData(adminForm);
-				controller.updateCurrentCat(formData);
-				adminView.handleSubmit(adminSection);
+				controller.handleAdminSectionSubmit(adminForm);
 			});
 
 			// Cat list event listeners
-			// cat clicked, load corresponding cat
-			catList.addEventListener('click', event => {
-				const el = event.target;
-				if(el.tagName.toUpperCase() == 'LI') {
-					controller.loadCat(el.dataset.catid);
-				}
-			});
+			catList.addEventListener('click', controller.handleCatListClicked);
 
 			// Cat Section event listeners
-			// image is clicked, update clickCount
-			catSection.addEventListener('click', event => {
-				if(event.target.tagName.toUpperCase() == 'IMG') {
-					controller.handleClickCount();
-					controller.triggerEvent('counterIncremented');
-				}
-			});
+			catSection.addEventListener('click', controller.handleCatSectionClicked);
 
 			// General event listners
-			// counter incremented
-			document.addEventListener('counterIncremented', () => {
-				const cat = model.getCurrentCat(data);
-				// update cat view counter
-				catView.setCatSectionCount(catSection, cat.clickCount);
-				// update admin view with new cat data
-				adminView.setAdminFormCount(adminForm, cat.clickCount);
-			});
-			// cat loaded
-			document.addEventListener('catLoaded', () => {
-				const cat = model.getCurrentCat(data);
-				// re-render cat view
-				catView.render(cat, catSection);
-				// update admin form data with new cat
-				utils.setFormData(adminForm, cat)
-			});
-			// cat updated 
-			document.addEventListener('catUpdated', () => {
-				const cats = model.getAllCats(data);
-				// full app re-render
-				listView.render(cats, catList);
-				// re-use render calls from catLoaded
-				controller.triggerEvent('catLoaded');
-			});
+			document.addEventListener('counterIncremented', () =>
+				controller.handleCounterIncremented(adminForm) );
+
+			document.addEventListener('catLoaded', () =>
+				controller.handleCatLoaded(adminForm) );
+
+			document.addEventListener('catUpdated', controller.handleCatUpdated);
 		},
 
 		// Given cat id, loads cat into cat view
