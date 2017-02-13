@@ -5,50 +5,59 @@ require('jsdom-global')();
 
 describe('listView', () => {
 	const listView = app.listView;
-	const document = jsdom("<div id='app'></div>").defaultView.document;
-	const mainApp = document.getElementById('app');
-	const cats = [
-		{ name: 'Spencer' },
-		{ name: 'Fluffykins' }
-	];
-	listView.init(mainApp, cats);
-	const list = mainApp.querySelector('ul');
+	
+	describe('createCatList', () => {
+		const catList = listView.createCatList();
 
-	describe('init', () => {
-		it('should create cat-list with cats', () => {
-			const catList = mainApp.querySelectorAll('#cat-list');
-			expect(catList.length).to.be.equal(1);
-
-			const catLis = mainApp.querySelectorAll('li');
-			expect(catLis.length).to.equal(2);
+		it('should create and return catList', () => {
+			expect(catList.id).to.equal('cat-list');
 		});
 
+		it('should set id and class for catSection', () => {
+			expect(catList.id).to.equal('cat-list');
+			expect(catList.className).to.equal('section');
+		});
 	});
 
 	describe('render', () => {
+		const catList = listView.createCatList();
+		const cats = [
+			{ name: 'Spencer' },
+			{ name: 'Fluffykins' }
+		];
+
 		it('should not append more cats on render', () => {
-			listView.render(cats);
-			const catLis = mainApp.querySelectorAll('li');
-			expect(catLis.length).to.equal(2);
+			// Initial render
+			listView.render(cats, catList);
+			expect(catList.children.length).to.equal(2);
+			// Secondary render call
+			listView.render(cats, catList);
+			// lenght should still be 2
+			expect(catList.children.length).to.equal(2);
 		});
 
 		it('should render lis with cat names', () => {
-			listView.render(cats);
+			listView.render(cats, catList);
 			const catNames = ['Spencer', 'Fluffykins'];
-			const catLiMap = [...mainApp.querySelectorAll('li')]
-				.map( li => li.textContent );
+			const catLiMap = [...catList.children].map(
+				li => li.textContent 
+			);
 			expect(catLiMap).to.deep.equal(catNames);
 		});
 
 		it('should update lis with new cat info', () => {
-			listView.render([
+			const newCats = [
+				{ name: 'Steve' },
 				{ name: 'Buttons' },
 				{ name: 'George' }
-			]);
-			const catNames = ['Buttons', 'George'];
-			const catLiMap = [...mainApp.querySelectorAll('li')]
-				.map( li => li.textContent );
+			];
+			listView.render(newCats, catList);
+			const catNames = ['Steve', 'Buttons', 'George'];
+			const catLiMap = [...catList.children].map(
+				li => li.textContent 
+			);
 			expect(catLiMap).to.deep.equal(catNames);
+			expect(catList.children.length).to.be.equal(3);
 		});
 
 	});
