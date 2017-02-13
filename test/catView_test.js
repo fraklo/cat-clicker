@@ -5,92 +5,66 @@ require('jsdom-global')();
 
 describe('catView', () => {
 	const catView = app.catView;
-	let mainApp;
-	beforeEach(() => {
-		const document = jsdom("<div id='app'></div>").defaultView.document
-		mainApp = document.getElementById('app');
-		catView.init(mainApp);
-	});
-
-	describe('init', () => {
-		it('should create cat section', () => {
-			const catSection = mainApp.querySelectorAll('#cat-section');
-			expect(catSection.length).to.be.equal(1);
-		});
-	});
 
 	describe('createCatSection', () => {
 		const catSection = catView.createCatSection();
-		it('should create cat section el', () => {
-			const catSectionEl = mainApp.querySelector('#cat-section');
-			expect(catSection.innerHTML).to.be.equal(catSectionEl.innerHTML);
+
+		it('should create and return catSection', () => {
+			expect(catSection.id).to.equal('cat-section');
 		});
 
-		it('should create cat-title el', () => {
-			const catTitle = catSection.querySelectorAll('.cat-title');
-			expect(catTitle.length).to.equal(1);
+		it('should set id and class for catSection', () => {
+			expect(catSection.id).to.equal('cat-section');
+			expect(catSection.className).to.equal('section');
 		});
 
-		it('should create img el', () => {
-			const img = catSection.querySelectorAll('img');
-			expect(img.length).to.equal(1);
+		it('should contain el set to catSection.catName with class cat-name', () => {
+			const el = catSection.querySelector('.cat-name');
+			expect(el.className).to.be.equal('cat-name');
+			expect(catSection.catName).to.be.equal(el);
 		});
 
-		it('should create clickCount el', () => {
-			const clickCount = catSection.querySelectorAll('.click-count');
-			expect(clickCount.length).to.equal(1);
+		it('should contain el set to catSection.img with class cat-image', () => {
+			const el = catSection.querySelector('.cat-image');
+			expect(el.className).to.be.equal('cat-image');
+			expect(catSection.img).to.be.equal(el);
 		});
-	});
 
-	describe('getCatSection', () => {
-		it('should return the cat section html el', () => {
-			const catSection = catView.getCatSection();
-			const catSectionEl = mainApp.querySelector('#cat-section');
-			expect(catSection).to.deep.equal(catSectionEl);
+		it('should contain el set to catSection.clickCount with class click-count', () => {
+			const el = catSection.querySelector('.click-count');
+			expect(el.className).to.be.equal('click-count');
+			expect(catSection.clickCount).to.be.equal(el);
 		});
 	});
 
 	describe('render', () => {
-		beforeEach(() =>
-			catView.render({ name:"", image:"", clickCount:""})
-		);
-		const cat = {
-			name: "fluffy",
-			image: "http://thecatapi.com/",
-			clickCount: 3
+		const catSection = catView.createCatSection();
+		const catData = {
+			name: "Steve",
+			image: "http://rando-image.com/",
+			clickCount: '9'
 		};
+		catView.render(catData, catSection);
 
-		it('should set cat-name to cat name', () => {
-			const catTitle = mainApp.querySelector('.cat-title');
-			catView.render(cat);
-			expect(catTitle.textContent).to.be.equal('fluffy');
+		it('should set catName el content to catData.name', () => {
+			expect(catSection.catName.textContent).to.be.equal(catData.name);
 		});
 
-		it('should set img tag src to cat image', () => {
-			const img = mainApp.querySelector('img');
-			catView.render(cat);
-			expect(img.src).to.be.equal(cat.image);
+		it('should set img el src to catData.image', () => {
+			expect(catSection.img.src).to.be.equal(catData.image);
 		});
 
-		it('should set click-count to cat clickCount', () => {
-			const clickCount = mainApp.querySelector('.click-count');
-			catView.render(cat);
-			expect(clickCount.textContent).to.be.equal('3');
-		});
-
-		it('should throw error "Requires valid cat object" if no object', () => {
-			const error = () => catView.render();
-			expect(error).to.throw('Requires valid cat object');
+		it('should set clickCount el content to catData.clickCount', () => {
+			expect(catSection.clickCount.textContent).to.be.equal(catData.clickCount);
 		});
 	});
 
-	describe('updateCounter', () => {
-		it('should update click to cat clickCount', () => {
-			const clickCount = mainApp.querySelector('.click-count');
-			catView.updateCounter(8);
-			expect(clickCount.textContent).to.be.equal('8');
-			catView.updateCounter(2);
-			expect(clickCount.textContent).to.be.equal('2');
+	describe('setCatSectionCount', () => {
+		it('should set cat section count to given count', () => {
+			const catSection = catView.createCatSection();
+			expect(catSection.clickCount.textContent).to.be.equal('');
+			catView.setCatSectionCount(catSection, 5);
+			expect(catSection.clickCount.textContent).to.be.equal('5');
 		});
 	});
 
