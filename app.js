@@ -106,7 +106,7 @@ const catView = {
 		// innerchild accessors
 		catSection.img = catSection.getElementsByClassName('cat-image')[0];
 		catSection.catName = catSection.getElementsByClassName('cat-name')[0];
-		catSection.counter = catSection.getElementsByClassName('click-count')[0];
+		catSection.clickCount = catSection.getElementsByClassName('click-count')[0];
 		return catSection;
 	},
 
@@ -119,7 +119,7 @@ const catView = {
 
 	// Syncs current cat click-count display with cat clickCount
 	setCatSectionCount: (catSection, count) =>
-		catSection.counter.textContent = count
+		catSection.clickCount.textContent = count
 }
 
 const model = {
