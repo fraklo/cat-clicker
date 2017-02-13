@@ -168,8 +168,9 @@ const model = {
 	},
 
 	validateData: (data) => {
-		if(typeof data !== 'object') throw new Error('Requires valid data object');
-		if(!data.cats) throw new Error('Data missing cats 🐱');
+		if(typeof data !== 'object' || !data.cats) {
+			return false;
+		}
 		return data;
 	}
 }
