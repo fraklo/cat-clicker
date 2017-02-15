@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const app = require('../app');
+const app = require('../js/model');
 
 describe('model', () => {
   const model = app.model;

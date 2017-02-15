@@ -1,6 +1,6 @@
 const expect = require('chai').expect;
 const jsdom = require('jsdom').jsdom;
-const app = require('../app');
+const app = require('../js/listView');
 require('jsdom-global')();
 
 describe('listView', () => {
